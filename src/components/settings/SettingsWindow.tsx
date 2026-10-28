@@ -3,10 +3,17 @@ import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import { Search, ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
 import { groups, type Page } from "./data";
 import { FieldRow } from "./Fields";
+import { GlassProvider, GlassCustomizer, useGlass } from "./glass";
+import { Droplets } from "lucide-react";
 
 const allPages = groups.flatMap((g) => g.pages);
 
 export function SettingsWindow() {
+  return <GlassProvider><SettingsInner /><GlassCustomizer /></GlassProvider>;
+}
+
+function SettingsInner() {
+  const glass = useGlass();
   const constraints = useRef<HTMLDivElement>(null);
   const drag = useDragControls();
   const [full, setFull] = useState(false);
@@ -46,11 +53,11 @@ export function SettingsWindow() {
             animate={full ? { opacity: 1, scale: 1, x: 0, y: 0, width: "100vw", height: "100vh" } : { opacity: 1, scale: 1, width: "min(1080px, 94vw)", height: "min(700px, 88vh)" }}
             exit={minimised ? { opacity: 0, scale: 0.2, y: 400 } : { opacity: 0, scale: 0.94 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className={`glass flex flex-col overflow-hidden bg-window shadow-window ${full ? "fixed inset-0 z-50 rounded-none" : "rounded-2xl"}`}
+            className={`lg lg-strong flex flex-col overflow-hidden ${full ? "fixed inset-0 z-50 !rounded-none" : "relative"}`}
           >
             {/* Title bar */}
             <div onPointerDown={(e) => !full && drag.start(e)} onDoubleClick={() => setFull(!full)}
-              className={`flex h-12 shrink-0 select-none items-center border-b border-sidebar-border bg-titlebar px-4 ${full ? "" : "cursor-grab active:cursor-grabbing"}`}>
+              className={`flex h-12 shrink-0 select-none items-center relative z-10 border-b border-sidebar-border px-4 ${full ? "" : "cursor-grab active:cursor-grabbing"}`}>
               <div className="group flex gap-2" onPointerDown={(e) => e.stopPropagation()}>
                 <Light className="bg-traffic-close" label="×" onClick={() => setClosed(true)} />
                 <Light className="bg-traffic-min" label="−" onClick={() => { setFull(false); setMinimised(true); }} />
@@ -69,9 +76,9 @@ export function SettingsWindow() {
 
             <div className="flex min-h-0 flex-1">
               {/* Sidebar */}
-              <aside className="flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+              <aside className="flex w-60 shrink-0 flex-col relative z-10 border-r border-sidebar-border lg-soft">
                 <div className="p-3">
-                  <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent px-2.5 py-1.5">
+                  <div className="flex items-center gap-2 lg-inset rounded-full px-3 py-1.5">
                     <Search className="size-3.5 text-muted-foreground" />
                     <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="w-full bg-transparent text-[13px] outline-none placeholder:text-muted-foreground" />
                   </div>
@@ -92,12 +99,12 @@ export function SettingsWindow() {
               </aside>
 
               {/* Content */}
-              <section className="min-w-0 flex-1 overflow-y-auto">
+              <section className="relative z-10 min-w-0 flex-1 overflow-y-auto">
                 <AnimatePresence mode="wait">
                   <motion.div key={active.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.22, ease: "easeOut" }}
                     className="mx-auto max-w-2xl px-10 py-8">
                     <div className="mb-8 flex items-center gap-4">
-                      <div className="flex size-12 items-center justify-center rounded-xl text-primary-foreground" style={{ background: active.tint }}>
+                      <div className="lg-orb flex size-12 items-center justify-center rounded-2xl text-primary-foreground" style={{ background: active.tint }}>
                         <active.icon className="size-6" />
                       </div>
                       <div>
@@ -108,7 +115,7 @@ export function SettingsWindow() {
                     {active.sections.map((s, i) => (
                       <motion.div key={s.title} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.06 }} className="mb-7">
                         <h2 className="mb-2 px-1 text-xs font-semibold text-muted-foreground">{s.title}</h2>
-                        <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                        <div className="divide-y divide-border lg relative !rounded-[calc(var(--g-radius)*0.7)]">
                           {s.fields.map((f) => <FieldRow key={f.label} field={f} />)}
                         </div>
                       </motion.div>
@@ -122,11 +129,17 @@ export function SettingsWindow() {
       </AnimatePresence>
 
       {/* Dock */}
-      <div className="glass absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-end gap-2 rounded-2xl border border-border bg-window p-2 shadow-window">
+      <div className="lg lg-strong !absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-end gap-2 p-2">
         <motion.button whileHover={{ y: -6, scale: 1.1 }} onClick={reopen} title="Settings"
-          className="relative flex size-12 items-center justify-center rounded-xl bg-foreground text-background">
+          className="lg-orb relative z-10 flex size-12 items-center justify-center rounded-xl bg-foreground text-background">
           <Settings2 className="size-6" />
           {!closed && <span className="absolute -bottom-1.5 size-1 rounded-full bg-foreground" />}
+        </motion.button>
+        <motion.button whileHover={{ y: -6, scale: 1.1 }} onClick={() => glass.setOpen(!glass.open)} title="Liquid Glass"
+          className="lg-orb relative z-10 flex size-12 items-center justify-center rounded-xl text-primary-foreground"
+          style={{ background: "linear-gradient(135deg, oklch(0.75 0.15 220), oklch(0.6 0.2 290))" }}>
+          <Droplets className="size-6" />
+          {glass.open && <span className="absolute -bottom-1.5 size-1 rounded-full bg-foreground" />}
         </motion.button>
       </div>
     </div>
@@ -148,8 +161,8 @@ function NavBtn({ children, ...p }: React.ButtonHTMLAttributes<HTMLButtonElement
 function NavItem({ page, active, onClick }: { page: Page; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} className="relative flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px]">
-      {active && <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-sidebar-accent" transition={{ type: "spring", stiffness: 500, damping: 38 }} />}
-      <span className="relative flex size-6 items-center justify-center rounded-md text-primary-foreground" style={{ background: page.tint }}>
+      {active && <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg lg-inset" transition={{ type: "spring", stiffness: 500, damping: 38 }} />}
+      <span className="lg-orb relative flex size-6 items-center justify-center rounded-md text-primary-foreground" style={{ background: page.tint }}>
         <page.icon className="size-3.5" />
       </span>
       <span className={`relative ${active ? "font-medium text-foreground" : "text-sidebar-foreground"}`}>{page.label}</span>
