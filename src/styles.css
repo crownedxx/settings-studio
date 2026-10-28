@@ -90,3 +90,86 @@
 
 @utility shadow-window { box-shadow: var(--shadow-window); }
 @utility glass { backdrop-filter: blur(24px) saturate(1.6); }
+
+/* ---------- Liquid Glass engine ---------- */
+:root {
+  --mx: 30%; --my: 10%;
+  --border: oklch(1 0 0 / 30%);
+  --input: oklch(0.5 0.01 260 / 22%);
+  --sidebar-border: oklch(1 0 0 / 30%);
+  --sidebar-accent: oklch(1 0 0 / 30%);
+  --muted: oklch(1 0 0 / 22%);
+  --muted-foreground: oklch(0.38 0.012 260);
+}
+.dark {
+  --foreground: oklch(0.97 0.005 260);
+  --card-foreground: oklch(0.97 0.005 260);
+  --sidebar-foreground: oklch(0.9 0.005 260);
+  --muted-foreground: oklch(0.78 0.01 260);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --sidebar-border: oklch(1 0 0 / 14%);
+  --sidebar-accent: oklch(1 0 0 / 14%);
+  --muted: oklch(1 0 0 / 10%);
+}
+
+@utility lg {
+  isolation: isolate;
+  border-radius: var(--g-radius);
+  background:
+    radial-gradient(520px circle at var(--mx) var(--my), oklch(1 0 0 / calc(var(--g-shine) * 0.32)), transparent 45%) fixed,
+    linear-gradient(var(--g-angle), oklch(1 0 0 / calc(var(--g-shine) * 0.3)), transparent 45%),
+    color-mix(in oklab, var(--g-tint) var(--g-tint-amt), transparent);
+  backdrop-filter: var(--g-filter-soft);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / calc(var(--g-rim) * 0.9)),
+    inset 0 -1px 0 0 oklch(1 0 0 / calc(var(--g-rim) * 0.35)),
+    inset 0 0 var(--g-depth) 0 oklch(1 0 0 / calc(var(--g-rim) * 0.35)),
+    inset var(--g-chroma) 0 calc(var(--g-chroma) * 2) calc(var(--g-chroma) * -1) oklch(0.7 0.25 20 / calc(var(--g-chroma-a) * 0.55)),
+    inset calc(var(--g-chroma) * -1) 0 calc(var(--g-chroma) * 2) calc(var(--g-chroma) * -1) oklch(0.7 0.18 230 / calc(var(--g-chroma-a) * 0.55)),
+    0 calc(var(--g-shadow) * 20px) calc(var(--g-shadow) * 50px) calc(var(--g-shadow) * -12px) oklch(0.15 0.03 260 / calc(var(--g-shadow) * 0.6));
+  &::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 1;
+    background: linear-gradient(var(--g-angle), oklch(1 0 0 / var(--g-rim)), oklch(1 0 0 / 0.05) 35%, transparent 60%, oklch(1 0 0 / calc(var(--g-rim) * 0.6)));
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  &::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+    opacity: var(--g-grain); mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+@utility lg-strong { backdrop-filter: var(--g-filter); }
+@utility lg-soft {
+  background: color-mix(in oklab, var(--g-tint) calc(var(--g-tint-amt) * 0.6), transparent);
+}
+@utility lg-inset {
+  background: color-mix(in oklab, var(--g-tint) calc(var(--g-tint-amt) * 0.5), oklch(1 0 0 / 12%));
+  box-shadow: inset 0 1px 3px oklch(0.2 0.02 260 / 18%), inset 0 -1px 0 oklch(1 0 0 / calc(var(--g-rim) * 0.5));
+  border: 1px solid oklch(1 0 0 / calc(var(--g-rim) * 0.25));
+}
+@utility lg-knob {
+  background: radial-gradient(circle at 30% 25%, oklch(1 0 0), oklch(0.96 0.005 260) 60%, oklch(0.88 0.01 260));
+  box-shadow: 0 2px 6px oklch(0.2 0.02 260 / 30%), inset 0 1px 0 oklch(1 0 0);
+}
+@utility lg-orb {
+  box-shadow: inset 0 2px 4px oklch(1 0 0 / 70%), inset 0 -4px 8px oklch(0 0 0 / 18%), 0 4px 12px oklch(0.2 0.02 260 / 25%);
+}
+@utility lg-blob {
+  position: absolute; width: 55vmax; height: 55vmax; border-radius: 50%; filter: blur(70px); opacity: 0.9;
+  animation: lg-float 22s ease-in-out infinite alternate;
+}
+@utility lg-stripes {
+  position: absolute; inset: 0; opacity: 0.18;
+  background: repeating-linear-gradient(115deg, oklch(1 0 0) 0 2px, transparent 2px 46px);
+}
+@keyframes lg-float {
+  0% { transform: translate(-10%, -5%) scale(1); }
+  50% { transform: translate(8%, 6%) scale(1.15); }
+  100% { transform: translate(-4%, 10%) scale(0.95); }
+}
+.lg-range { appearance: none; height: 6px; border-radius: 999px; background: oklch(0.5 0.01 260 / 25%); box-shadow: inset 0 1px 2px oklch(0 0 0 / 20%); }
+.lg-range::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+  background: radial-gradient(circle at 30% 25%, #fff, #eef0f4 60%, #d9dce3); box-shadow: 0 2px 6px oklch(0.2 0.02 260 / 35%), inset 0 1px 0 #fff; transition: transform .15s; }
+.lg-range::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.lg-range::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px oklch(0.2 0.02 260 / 35%); }
