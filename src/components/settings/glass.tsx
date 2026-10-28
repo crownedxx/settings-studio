@@ -98,7 +98,7 @@ export function GlassProvider({ children }: { children: ReactNode }) {
   }, [s]);
 
   const ctx: Ctx = { s, set: (p) => setS((o) => ({ ...o, ...p })), reset: () => setS(defaults), open, setOpen };
-  const w = wallpapers[s.wallpaper] ?? wallpapers[0];
+  const w = (wallpapers[s.wallpaper] ?? wallpapers[0])!;
 
   return (
     <GlassCtx.Provider value={ctx}>
